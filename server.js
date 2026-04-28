@@ -107,6 +107,12 @@ app.put('/api/teams/:id', requireAdmin, (req, res) => {
   res.json(stmts.getTeam.get(id));
 });
 
+// Reset all team stats to zero (admin only, one-time use)
+app.post('/api/teams/reset', requireAdmin, (req, res) => {
+  db.prepare('UPDATE teams SET points = 0, penalties = 0, played = 0').run();
+  res.json({ ok: true, message: 'All team stats reset to zero' });
+});
+
 // --- Matches ---
 app.get('/api/matches', (req, res) => {
   res.json(stmts.allMatches.all());
