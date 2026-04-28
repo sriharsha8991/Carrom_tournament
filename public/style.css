@@ -335,19 +335,6 @@ main {
 .team-name { font-weight: 600; }
 .players { color: var(--muted); font-size: 13px; }
 
-.tie-badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 8px;
-  background: rgba(207, 122, 26, 0.1);
-  color: var(--amber);
-  border: 1px solid rgba(207, 122, 26, 0.3);
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
 /* Matches */
 #matchesList { display: flex; flex-direction: column; gap: 14px; }
 .date-group-header {
@@ -576,18 +563,6 @@ input:focus, select:focus { border-color: var(--accent); }
 .btn.small { padding: 6px 12px; font-size: 13px; }
 
 .error-text { color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 1em; }
-
-.inline-result-form {
-  margin-top: 8px;
-  padding: 14px;
-  background: var(--surface-2);
-  border-radius: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-.inline-result-form input { width: 80px; text-align: center; }
 
 .inline-edit-form {
   padding: 16px 20px;

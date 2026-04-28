@@ -24,9 +24,6 @@ const stmts = {
   allTeams: db.prepare('SELECT * FROM teams ORDER BY points DESC, penalties DESC, id ASC'),
   getTeam: db.prepare('SELECT * FROM teams WHERE id = ?'),
   updateTeamStats: db.prepare('UPDATE teams SET points = ?, penalties = ?, played = ? WHERE id = ?'),
-  applyTeamDelta: db.prepare(
-    'UPDATE teams SET points = points + ?, penalties = penalties + ?, played = played + ? WHERE id = ?'
-  ),
 
   allMatches: db.prepare(`
     SELECT m.*,
@@ -39,9 +36,6 @@ const stmts = {
   `),
   getMatch: db.prepare('SELECT * FROM matches WHERE id = ?'),
   insertMatch: db.prepare('INSERT INTO matches (date, team_a_id, team_b_id) VALUES (?, ?, ?)'),
-  updateMatchResult: db.prepare(
-    "UPDATE matches SET score_a = ?, score_b = ?, penalty_a = ?, penalty_b = ?, status = 'completed' WHERE id = ?"
-  ),
   deleteMatch: db.prepare('DELETE FROM matches WHERE id = ?'),
 };
 
@@ -133,51 +127,13 @@ app.post('/api/matches', requireAdmin, (req, res) => {
   res.json(stmts.getMatch.get(info.lastInsertRowid));
 });
 
-app.put('/api/matches/:id/result', requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid id' });
-  const match = stmts.getMatch.get(id);
-  if (!match) return res.status(404).json({ error: 'Match not found' });
-
-  const score_a = Math.trunc(+req.body.score_a) || 0;
-  const score_b = Math.trunc(+req.body.score_b) || 0;
-  let penalty_a = Math.trunc(+req.body.penalty_a) || 0;
-  let penalty_b = Math.trunc(+req.body.penalty_b) || 0;
-  // Penalties only allowed on a tie
-  if (score_a !== score_b) {
-    penalty_a = 0;
-    penalty_b = 0;
-  }
-
-  const tx = db.transaction(() => {
-    // If match was already completed, first reverse old contribution
-    if (match.status === 'completed') {
-      stmts.applyTeamDelta.run(-match.score_a, -match.penalty_a, -1, match.team_a_id);
-      stmts.applyTeamDelta.run(-match.score_b, -match.penalty_b, -1, match.team_b_id);
-    }
-    stmts.updateMatchResult.run(score_a, score_b, penalty_a, penalty_b, id);
-    stmts.applyTeamDelta.run(score_a, penalty_a, 1, match.team_a_id);
-    stmts.applyTeamDelta.run(score_b, penalty_b, 1, match.team_b_id);
-  });
-  tx();
-
-  res.json(stmts.getMatch.get(id));
-});
-
 app.delete('/api/matches/:id', requireAdmin, (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid id' });
   const match = stmts.getMatch.get(id);
   if (!match) return res.status(404).json({ error: 'Match not found' });
 
-  const tx = db.transaction(() => {
-    if (match.status === 'completed') {
-      stmts.applyTeamDelta.run(-match.score_a, -match.penalty_a, -1, match.team_a_id);
-      stmts.applyTeamDelta.run(-match.score_b, -match.penalty_b, -1, match.team_b_id);
-    }
-    stmts.deleteMatch.run(id);
-  });
-  tx();
+  stmts.deleteMatch.run(id);
 
   res.json({ ok: true });
 });

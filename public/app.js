@@ -162,28 +162,19 @@ function renderLeaderboard() {
   const ranks = computeRanks(teams);
 
   // Build a map of points → count, but only counting teams that have played
-  const activePointsCounts = {};
-  teams.forEach((t) => {
-    if (t.played > 0) {
-      activePointsCounts[t.points] = (activePointsCounts[t.points] || 0) + 1;
-    }
-  });
-
   tbody.innerHTML = teams.map((t, i) => {
     const rank = ranks[i];
     let badgeClass = '';
     if (rank === 1) badgeClass = 'gold';
     else if (rank === 2) badgeClass = 'silver';
     else if (rank === 3) badgeClass = 'bronze';
-    // Only show TIE for teams that have played and share their points with another active team
-    const tied = t.played > 0 && (activePointsCounts[t.points] || 0) > 1;
     const penaltyDisplay = t.penalties === 0 ? '—' : t.penalties;
     return `
       <tr data-team-id="${t.id}">
         <td><span class="rank-badge ${badgeClass}">${rank}</span></td>
         <td><div class="team-name">${escapeHtml(t.name)}</div></td>
         <td><div class="players">${escapeHtml(t.player1)} & ${escapeHtml(t.player2)}</div></td>
-        <td class="num">${t.points}${tied ? '<span class="tie-badge">TIE</span>' : ''}</td>
+        <td class="num">${t.points}</td>
         <td class="num">${penaltyDisplay}</td>
         <td class="num">${t.played}</td>
         ${state.admin ? `<td class="num"><button class="btn ghost small edit-team-btn" data-id="${t.id}">Edit</button></td>` : ''}
@@ -325,9 +316,8 @@ function renderMatches() {
   list.innerHTML = html;
 
   if (state.admin) {
-    $$('.enter-result-btn').forEach((b) => b.addEventListener('click', () => openResultForm(Number(b.dataset.id))));
     $$('.delete-match-btn').forEach((b) => b.addEventListener('click', async () => {
-      if (!confirm('Delete this match? If it was completed, points will be reversed.')) return;
+      if (!confirm('Delete this match?')) return;
       try {
         await api(`/api/matches/${b.dataset.id}`, { method: 'DELETE' });
         await refreshAll();
@@ -371,63 +361,10 @@ function renderMatchCard(m) {
       </div>
       ${state.admin ? `
         <div class="match-actions">
-          ${!isPast ? `<button class="btn primary small enter-result-btn" data-id="${m.id}">Enter result</button>` : `<button class="btn ghost small enter-result-btn" data-id="${m.id}">Edit result</button>`}
           <button class="btn danger small delete-match-btn" data-id="${m.id}">Delete</button>
         </div>` : ''}
     </div>
   `;
-}
-
-function openResultForm(id) {
-  const card = document.querySelector(`.match-card[data-match-id="${id}"]`);
-  if (!card || card.querySelector('.inline-result-form')) return;
-  const m = state.matches.find((x) => x.id === id);
-  if (!m) return;
-  setEditing(true);
-
-  const form = document.createElement('div');
-  form.className = 'inline-result-form';
-  form.innerHTML = `
-    <span><strong>${escapeHtml(m.team_a_name)}</strong> score</span>
-    <input type="number" id="ra-${id}" value="${m.score_a || 0}">
-    <span><strong>${escapeHtml(m.team_b_name)}</strong> score</span>
-    <input type="number" id="rb-${id}" value="${m.score_b || 0}">
-    <div class="penalty-section" style="display:none; gap:10px; align-items:center; flex-wrap:wrap">
-      <span class="muted">Tie — penalties:</span>
-      <input type="number" id="pa-${id}" placeholder="A pen" value="${m.penalty_a || 0}">
-      <input type="number" id="pb-${id}" placeholder="B pen" value="${m.penalty_b || 0}">
-    </div>
-    <button class="btn primary small save-result">Save</button>
-    <button class="btn ghost small cancel-result">Cancel</button>
-  `;
-  card.appendChild(form);
-
-  const ra = form.querySelector(`#ra-${id}`);
-  const rb = form.querySelector(`#rb-${id}`);
-  const penaltySection = form.querySelector('.penalty-section');
-  const updatePenaltyVisibility = () => {
-    penaltySection.style.display = (Number(ra.value) === Number(rb.value)) ? 'flex' : 'none';
-  };
-  ra.addEventListener('input', updatePenaltyVisibility);
-  rb.addEventListener('input', updatePenaltyVisibility);
-  updatePenaltyVisibility();
-
-  form.querySelector('.cancel-result').addEventListener('click', () => { form.remove(); setEditing(false); });
-  form.querySelector('.save-result').addEventListener('click', async () => {
-    const score_a = Number(ra.value);
-    const score_b = Number(rb.value);
-    const tie = score_a === score_b;
-    const penalty_a = tie ? Number(form.querySelector(`#pa-${id}`).value) : 0;
-    const penalty_b = tie ? Number(form.querySelector(`#pb-${id}`).value) : 0;
-    try {
-      await api(`/api/matches/${id}/result`, {
-        method: 'PUT',
-        body: JSON.stringify({ score_a, score_b, penalty_a, penalty_b }),
-      });
-      setEditing(false);
-      await refreshAll();
-    } catch (e) { alert(e.message); }
-  });
 }
 
 function setupSchedule() {
@@ -493,7 +430,7 @@ function updateHeroStats() {
   const el = (id) => document.getElementById(id);
   if (el('statTeams')) el('statTeams').textContent = state.teams.length;
   if (el('statMatches')) el('statMatches').textContent = state.matches.length;
-  if (el('statCompleted')) el('statCompleted').textContent = state.matches.filter(m => m.status === 'completed').length;
+  if (el('statCompleted')) el('statCompleted').textContent = state.matches.filter(m => new Date(m.date) <= new Date()).length;
 }
 
 function updateEmptyState() {
