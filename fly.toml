@@ -1,0 +1,20 @@
+app = "carrom-tournament"
+primary_region = "bom"
+
+[build]
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+  DB_PATH = "/data/data.sqlite"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[mounts]
+  source = "carrom_data"
+  destination = "/data"
