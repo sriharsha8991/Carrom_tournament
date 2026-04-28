@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: carrom-tournament
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: PORT
+        value: 3000
+    disk:
+      name: carrom-data
+      mountPath: /data
+      sizeGB: 1
