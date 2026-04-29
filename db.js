@@ -5,7 +5,18 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+let _initDone = false;
+let _initPromise = null;
+
 async function init() {
+  if (_initDone) return;
+  if (_initPromise) return _initPromise;
+  _initPromise = _doInit();
+  await _initPromise;
+  _initDone = true;
+}
+
+async function _doInit() {
   const client = await pool.connect();
   try {
     await client.query(`

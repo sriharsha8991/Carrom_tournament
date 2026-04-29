@@ -666,6 +666,20 @@ input:focus, select:focus { border-color: var(--accent); }
 .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
 .empty-state p { margin: 0; line-height: 1.6; }
 
+/* Loading skeleton */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton-row td { padding: 14px 12px !important; }
+.skeleton-bar {
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
 /* Footer */
 .footer {
   text-align: center;

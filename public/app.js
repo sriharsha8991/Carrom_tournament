@@ -515,9 +515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   await refreshAll();
 
-  // Poll every 10s
-  setInterval(refreshAll, 10000);
-  // Refresh on focus
+  // Refresh on tab focus (no polling — saves API calls)
   window.addEventListener('focus', refreshAll);
 });
 

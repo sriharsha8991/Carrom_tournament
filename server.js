@@ -29,6 +29,12 @@ async function requireAdmin(req, res, next) {
   next();
 }
 
+// --- Lazy DB init middleware (for serverless) ---
+app.use(async (req, res, next) => {
+  try { await init(); next(); }
+  catch (err) { console.error('DB init error:', err); res.status(500).json({ error: 'DB init failed' }); }
+});
+
 // --- Auth routes ---
 app.post('/api/auth/login', async (req, res) => {
   const { password } = req.body || {};
