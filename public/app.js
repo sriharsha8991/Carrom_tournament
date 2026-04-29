@@ -173,12 +173,13 @@ function renderLeaderboard() {
   tbody.innerHTML = pageTeams.map((t, i) => {
     const rank = pageRanks[i];
     let badgeClass = '';
-    if (rank === 1) badgeClass = 'gold';
-    else if (rank === 2) badgeClass = 'silver';
-    else if (rank === 3) badgeClass = 'bronze';
+    let podiumClass = '';
+    if (rank === 1) { badgeClass = 'gold'; podiumClass = 'podium-gold'; }
+    else if (rank === 2) { badgeClass = 'silver'; podiumClass = 'podium-silver'; }
+    else if (rank === 3) { badgeClass = 'bronze'; podiumClass = 'podium-bronze'; }
     const penaltyDisplay = t.penalties === 0 ? '—' : t.penalties;
     return `
-      <tr data-team-id="${t.id}">
+      <tr data-team-id="${t.id}" class="${podiumClass}">
         <td><span class="rank-badge ${badgeClass}">${rank}</span></td>
         <td><div class="team-name">${escapeHtml(t.name)}</div></td>
         <td><div class="players">${escapeHtml(t.player1)} & ${escapeHtml(t.player2)}</div></td>
@@ -435,10 +436,12 @@ function getTeamNumber(name) {
   return m ? m[0] : '?';
 }
 
-function renderTeams() {
+function renderTeams(filter = '') {
+  const lower = filter.toLowerCase();
   $('#teamsGrid').innerHTML = state.teams
     .slice()
     .sort((a, b) => a.id - b.id)
+    .filter(t => !lower || t.name.toLowerCase().includes(lower) || t.player1.toLowerCase().includes(lower) || t.player2.toLowerCase().includes(lower))
     .map((t) => `
       <div class="team-card">
         <div class="team-card-header">
@@ -490,7 +493,8 @@ async function refreshAll() {
     if (!_userEditing) {
       renderLeaderboard();
       renderMatches();
-      renderTeams();
+      const searchInput = document.getElementById('teamSearch');
+      renderTeams(searchInput ? searchInput.value : '');
       renderTeamSelects();
       updateEmptyState();
     }
@@ -506,6 +510,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
   setupAuth();
   setupSchedule();
+  setupDarkMode();
+  setupTeamSearch();
   await checkAuth();
   await refreshAll();
 
@@ -514,3 +520,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Refresh on focus
   window.addEventListener('focus', refreshAll);
 });
+
+function setupDarkMode() {
+  const toggle = document.getElementById('themeToggle');
+  const icon = document.getElementById('themeIcon');
+  const sunPath = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  const moonPath = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+  function applyTheme(dark) {
+    document.documentElement.dataset.theme = dark ? 'dark' : '';
+    icon.innerHTML = dark ? sunPath : moonPath;
+  }
+
+  const saved = localStorage.getItem('theme');
+  applyTheme(saved === 'dark');
+
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    const next = !isDark;
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+    applyTheme(next);
+  });
+}
+
+function setupTeamSearch() {
+  const input = document.getElementById('teamSearch');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    renderTeams(input.value);
+  });
+}

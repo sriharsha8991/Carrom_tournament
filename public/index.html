@@ -28,6 +28,9 @@
       </div>
     </div>
     <nav class="nav-actions">
+      <button id="themeToggle" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <span id="adminBadge" class="admin-badge hidden">ADMIN</span>
       <button id="loginBtn" class="icon-btn" title="Admin login" aria-label="Admin login">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -39,24 +42,26 @@
   <!-- Hero banner -->
   <section class="hero">
     <div class="hero-inner">
-      <span class="hero-emoji">&#127942;</span>
-      <div>
-        <h2 class="hero-title">Office Carrom Championship 2026</h2>
-        <p class="hero-sub">14 teams. 28 players. One board. Zero chill.</p>
+      <div class="hero-left">
+        <span class="hero-emoji">&#127942;</span>
+        <div>
+          <h2 class="hero-title">Office Carrom Championship 2026</h2>
+          <p class="hero-sub">14 teams. 28 players. One board. Zero chill.</p>
+        </div>
       </div>
-    </div>
-    <div class="hero-stats" id="heroStats">
-      <div class="hero-stat">
-        <span class="hero-stat-num" id="statTeams">14</span>
-        <span class="hero-stat-label">Teams</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-num" id="statMatches">0</span>
-        <span class="hero-stat-label">Matches</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-num" id="statCompleted">0</span>
-        <span class="hero-stat-label">Completed</span>
+      <div class="hero-stats" id="heroStats">
+        <div class="hero-stat">
+          <span class="hero-stat-num" id="statTeams">14</span>
+          <span class="hero-stat-label">Teams</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" id="statMatches">0</span>
+          <span class="hero-stat-label">Matches</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" id="statCompleted">0</span>
+          <span class="hero-stat-label">Completed</span>
+        </div>
       </div>
     </div>
   </section>
@@ -136,6 +141,12 @@
       <div class="panel-header">
         <h2>&#129309; Meet the Teams</h2>
         <p class="muted">14 duos battling for carrom supremacy</p>
+      </div>
+      <div class="teams-search-wrap">
+        <div class="search-wrap-inner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="teamSearch" class="search-bar" placeholder="Search teams or players..." />
+        </div>
       </div>
       <div id="teamsGrid" class="teams-grid"></div>
     </section>
