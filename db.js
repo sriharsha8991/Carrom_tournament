@@ -1,8 +1,4 @@
 const { Pool } = require('pg');
-const dns = require('dns');
-
-// Prefer IPv6 for Supabase direct connections
-dns.setDefaultResultOrder('ipv6first');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
