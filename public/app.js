@@ -156,14 +156,22 @@ function computeRanks(teams) {
   return ranks;
 }
 
+const TEAMS_PER_PAGE = 6;
+let leaderboardPage = 0;
+
 function renderLeaderboard() {
   const tbody = $('#leaderboardBody');
   const teams = state.teams;
   const ranks = computeRanks(teams);
+  const totalPages = Math.ceil(teams.length / TEAMS_PER_PAGE);
+  if (leaderboardPage >= totalPages) leaderboardPage = totalPages - 1;
+  if (leaderboardPage < 0) leaderboardPage = 0;
+  const start = leaderboardPage * TEAMS_PER_PAGE;
+  const pageTeams = teams.slice(start, start + TEAMS_PER_PAGE);
+  const pageRanks = ranks.slice(start, start + TEAMS_PER_PAGE);
 
-  // Build a map of points → count, but only counting teams that have played
-  tbody.innerHTML = teams.map((t, i) => {
-    const rank = ranks[i];
+  tbody.innerHTML = pageTeams.map((t, i) => {
+    const rank = pageRanks[i];
     let badgeClass = '';
     if (rank === 1) badgeClass = 'gold';
     else if (rank === 2) badgeClass = 'silver';
@@ -181,6 +189,26 @@ function renderLeaderboard() {
       </tr>
     `;
   }).join('');
+
+  // Pagination controls
+  let paginationEl = document.getElementById('leaderboardPagination');
+  if (!paginationEl) {
+    paginationEl = document.createElement('div');
+    paginationEl.id = 'leaderboardPagination';
+    paginationEl.className = 'pagination';
+    tbody.closest('.table-wrap').parentElement.appendChild(paginationEl);
+  }
+  if (totalPages <= 1) {
+    paginationEl.innerHTML = '';
+  } else {
+    paginationEl.innerHTML = `
+      <button class="btn ghost small pg-prev" ${leaderboardPage === 0 ? 'disabled' : ''}>← Prev</button>
+      <span class="pg-info">Page ${leaderboardPage + 1} of ${totalPages}</span>
+      <button class="btn ghost small pg-next" ${leaderboardPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+    `;
+    paginationEl.querySelector('.pg-prev').addEventListener('click', () => { leaderboardPage--; renderLeaderboard(); });
+    paginationEl.querySelector('.pg-next').addEventListener('click', () => { leaderboardPage++; renderLeaderboard(); });
+  }
 
   if (state.admin) {
     $$('.edit-team-btn').forEach((b) => {

@@ -335,6 +335,25 @@ main {
 .team-name { font-weight: 600; }
 .players { color: var(--muted); font-size: 13px; }
 
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 10px 0;
+}
+.pg-info {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Matches */
 #matchesList { display: flex; flex-direction: column; gap: 14px; }
 .date-group-header {
