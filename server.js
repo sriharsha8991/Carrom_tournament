@@ -144,8 +144,10 @@ init().then(() => {
   console.error('Failed to initialize database:', err);
   process.exit(1);
 });
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+
+// Graceful shutdown
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
 
 // Keep server alive on unexpected errors
 process.on('uncaughtException', (err) => {
